@@ -10,3 +10,11 @@ h1{
 label{
   color:blue
 }
+
+.error{
+  color:red
+}
+
+.error input{
+ border: 1px solid red;
+}
