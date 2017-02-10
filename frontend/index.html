@@ -8,5 +8,32 @@
   </head>
   <body>
     <h1>Hi there!</h1>
+    <p>Welcome to the management system of cooks</p>
+
+    <form name="addnew" method="get" action="enter_data.php">
+      <input name="link" type="hidden" value="index.php" />
+      <label>Name: </label><br />
+      <input name="name" type="text" size="25" maxlength="30"/> <br />
+      <label>Surname: </label><br />
+      <input name="surname" type="text" size="25" maxlength="30"/> <br />
+      <label>Patronymic: </label><br />
+      <input name="patronymic" type="text" size="25" maxlength="30"/> <br />
+      <label>Qualifications:</label>
+      <p><input type="checkbox" name="russian" value="russian" unchecked> russian</p>
+      <p><input type="checkbox" name="italian" value="italian" unchecked> italian</p>
+      <p><input type="checkbox" name="japanese" value="japanese" unchecked> japanese</p>
+      <label>Desired shifts: </label><br/>
+      <input type="radio" name="shiftstime" value="morning"> Morning (10:00 - 17:00)
+      <input type="radio" name="shiftstime" value="evening"> Evening (17:00 - 00:00)<br>
+      <p><input type="checkbox" name="necessityshiftstime" value="necessityshiftstime" unchecked> Can't work in another time</p>
+      <label>Desired duration of the working day (hours):</label>
+      <input type="number" min="4" max="10" step="1" value ="7"/>
+      <p><input type="checkbox" name="necessityshiftstime" value="necessityshiftstime" unchecked> Don't accept another duration</p>
+      <label>Working mode: </label><br/>
+      <input checked type="radio" name="workingmode" value="5/2"> 5/2
+      <input type="radio" name="workingmode" value="2/2"> 2/2 <br />
+      <input type="submit" name="enter" value="Add" />
+    </form>
+    
   </body>
 </html>
