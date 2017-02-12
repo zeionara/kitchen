@@ -1,16 +1,38 @@
 *{
   margin: 0;
-  padding: 0
+  padding: 0;
+  font-family: sans-serif;
 }
 
 h1{
-  color:red
+  color:#455EEA;
+  padding:10px 20px;
 }
+
+.usertext{
+  color:#455EEA;
+  padding:5px;
+}
+
+h2{
+  color:#4594EA;
+  padding:10px 20px;
+}
+
 
 label{
-  color:blue
+  color:#45B8EA;
 }
 
+label.after{
+  padding-left:10px;
+  line-height:150%;
+}
+
+form#addnew td{
+  padding-left:20px;
+  padding-top:10px;
+}
 .error{
   color:red
 }
@@ -28,13 +50,15 @@ label{
 }
 
 table#cooks, table#cooks td {
-  border: 1px solid black;
+  border: 2px solid #8DC5EA;
   border-collapse: collapse;
   padding : 5px;
 }
 
 table#cooks tr:first-child{
   font-weight: bold;
+  background: #8DC5EA;
+  color:white;
 }
 
 tr.cookinfo{
@@ -42,6 +66,24 @@ tr.cookinfo{
 }
 
 tr.cookinfo:hover{
-  background: gray;
+  background: #8DC5EA;
+  color: white;
+}
+
+table#cooks{
+  color : #4594EA;
+}
+
+.submit{
+  background:#453EEA;
+  width:180px;
+  border : 1px solid white;
+  height:30px;
   color:white;
+  margin-left:20px;
+  cursor:pointer;
+}
+
+.submit:hover{
+  background:#5752EA;
 }
