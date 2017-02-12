@@ -1,0 +1,7 @@
+{
+  "name": "kitchenapp",
+  "version": "1.0.0",
+  "dependencies": {
+    "express": "^4.14.1"
+  }
+}

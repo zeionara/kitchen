@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <link href="styles/style.css" rel="stylesheet"/>
+    <script src="scripts/script.js"></script>
+    <title>Cooks</title>
+  </head>
+  <body>
+    <h1>Hi there!</h1>
+    <p>Welcome to the management system of cooks</p>
+
+    <form name="addnew" method="POST" action="/addnew_handler">
+      <table>
+        <tr>
+          <td>
+            <label>Name: </label>
+          </td>
+          <td>
+            <input pattern="[а-яА-ЯёЁ]+" required name="name" type="text" size="25" maxlength="30" />
+          </td>
+        </tr>
+        <tr>
+          <td>
+            <label>Surname: </label>
+          </td>
+          <td>
+            <input name="surname" type="text" size="25" maxlength="30"/>
+          </td>
+        </tr>
+        <tr>
+          <td>
+            <label>Patronymic: </label>
+          </td>
+          <td>
+            <input name="patronymic" type="text" size="25" maxlength="30"/>
+          </td>
+        </tr>
+        <tr>
+          <td>
+            <label>Qualifications:</label>
+          </td>
+          <td>
+            <input type="checkbox" name="russian" value="russian" unchecked><label> russian </label>
+            <input type="checkbox" name="italian" value="italian" unchecked><label> italian </label>
+            <input type="checkbox" name="japanese" value="japanese" unchecked><label> japanese </label>
+          </td>
+        </tr>
+        <tr>
+          <td>
+            <label>Desired shifts: </label><br/>
+          </td>
+          <td>
+            <input type="radio" name="shiftstime" value="morning" id="morningshifts"><label>Morning (10:00 - 17:00)</label><br />
+            <input type="radio" name="shiftstime" value="evening"><label>Evening (17:00 - 00:00)</label><br />
+            <input type="checkbox" name="necessityshiftstime" value="necessityshiftstime" unchecked><label>Can't work in another time</label><br />
+          </td>
+        </tr>
+        <tr>
+          <td>
+            <label>Desired duration of <br /> the working day (hours):</label>
+          </td>
+          <td>
+            <input name="dayduration" type="number" min="4" max="10" step="1" value ="7"/><br />
+            <input type="checkbox" name="necessityshiftstime" value="necessityshiftstime" unchecked><label>Don't accept another duration</label><br />
+          </td>
+        </tr>
+        <tr>
+          <td>
+            <label>Working mode: </label><br/>
+          </td>
+          <td>
+            <input checked type="radio" name="workingmode" value="5/2"> 5/2
+            <input type="radio" name="workingmode" value="2/2"> 2/2 <br />
+          </td>
+        </tr>
+      </table>
+      <input type="button" onclick="validate(this.form)" value="Add">
+    </form>
+
+  </body>
+</html>
