@@ -26,3 +26,13 @@ label{
 .notification input{
  border: 1px solid green;
 }
+
+table#cooks, table#cooks td {
+  border: 1px solid black;
+  border-collapse: collapse;
+  padding : 5px;
+}
+
+table#cooks tr:first-child{
+  font-weight: bold;
+}

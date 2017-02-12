@@ -8,8 +8,8 @@
     <title>Cooks</title>
   </head>
   <body>
-    <h1>Hi there!</h1>
-    <p>Welcome to the management system of cooks</p>
+    <h1>Managing system of cooks</h1>
+    <h2>Add new cook</h2>
 
     <form name="addnew" method="POST" action="/addnew_handler" id="addnew">
       <table>
@@ -81,5 +81,47 @@
       </div>
     </form>
 
+    <h2>All cooks in system</h2>
+    <button id="load_cooks">Reload</button>
+    <table id="cooks">
+        <tr>
+          <td>
+            Name
+          </td>
+          <td>
+            Surname
+          </td>
+          <td>
+            Patronymic
+          </td>
+          <td>
+            Russian qualification
+          </td>
+          <td>
+            Italian qualification
+          </td>
+          <td>
+            Japanese qualification
+          </td>
+          <td>
+            Morning shifts
+          </td>
+          <td>
+            Evening shifts
+          </td>
+          <td>
+            Necessity shifts time
+          </td>
+          <td>
+            Day duration
+          </td>
+          <td>
+            Necessity day duration
+          </td>
+          <td>
+            Working mode
+          </td>
+        </tr>
+    </table>
   </body>
 </html>
