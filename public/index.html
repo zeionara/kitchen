@@ -3,11 +3,91 @@
   <head>
     <meta charset="utf-8" />
     <link href="styles/style.css" rel="stylesheet"/>
+    <link href="styles/modal_style.css" rel="stylesheet"/>
     <script src="https://code.jquery.com/jquery-2.2.4.min.js"></script>
     <script src="scripts/script.js"></script>
     <title>Cooks</title>
   </head>
   <body>
+    <div id="modal_form"><!-- Сaмo oкнo -->
+      <span id="modal_close">X</span> <!-- Кнoпкa зaкрыть -->
+
+      <form name="edit" method="POST" action="/edit_handler" id="edit">
+        <table>
+          <tr>
+            <td>
+              <label>Name: </label>
+            </td>
+            <td>
+              <input pattern="^[А-ЯЁ][а-яё]+$|^[A-Z][a-z]+$" required name="name" type="text" size="25" maxlength="30" />
+            </td>
+          </tr>
+          <tr>
+            <td>
+              <label>Surname: </label>
+            </td>
+            <td>
+              <input pattern="^[А-ЯЁ][а-яё]+$|^[A-Z][a-z]+$" required name="surname" type="text" size="25" maxlength="30"/>
+            </td>
+          </tr>
+          <tr>
+            <td>
+              <label>Patronymic: </label>
+            </td>
+            <td>
+              <input pattern="^[А-ЯЁ][а-яё]+$|^[A-Z][a-z]+$" name="patronymic" type="text" size="25" maxlength="30"/>
+            </td>
+          </tr>
+          <tr>
+            <td>
+              <label>Qualifications:</label>
+            </td>
+            <td>
+              <input type="checkbox" name="russian" value="russian" unchecked><label> russian </label>
+              <input type="checkbox" name="italian" value="italian" unchecked><label> italian </label>
+              <input type="checkbox" name="japanese" value="japanese" unchecked><label> japanese </label>
+            </td>
+          </tr>
+          <tr>
+            <td>
+              <label>Desired shifts: </label><br/>
+            </td>
+            <td>
+              <input type="radio" name="shiftstime" value="morning" id="morningshifts"><label>Morning (10:00 - 17:00)</label><br />
+              <input type="radio" name="shiftstime" value="evening"><label>Evening (17:00 - 00:00)</label><br />
+              <input type="checkbox" name="necessityshiftstime" value="necessityshiftstime" unchecked><label>Can't work in another time</label><br />
+            </td>
+          </tr>
+          <tr>
+            <td>
+              <label>Desired duration of <br /> the working day (hours):</label>
+            </td>
+            <td>
+              <input name="dayduration" type="number" min="4" max="10" step="1" value ="7"/><br />
+              <input type="checkbox" name="necessitydayduration" value="necessitydayduration" unchecked><label>Don't accept another duration</label><br />
+            </td>
+          </tr>
+          <tr>
+            <td>
+              <label>Working mode: </label><br/>
+            </td>
+            <td>
+              <input checked type="radio" name="workingmode" value="5/2"> 5/2
+              <input type="radio" name="workingmode" value="2/2"> 2/2 <br />
+            </td>
+          </tr>
+        </table>
+        <div>
+          <input type="submit" value="Edit" name="submit">
+          <input type="button" value="Delete" name="delete" id="delete">
+        </div>
+      </form>
+
+
+
+    </div>
+    <div id="overlay"></div><!-- Пoдлoжкa -->
+
     <h1>Managing system of cooks</h1>
     <h2>Add new cook</h2>
 
@@ -85,6 +165,9 @@
     <button id="load_cooks">Reload</button>
     <table id="cooks">
         <tr>
+          <td>
+            Id
+          </td>
           <td>
             Name
           </td>

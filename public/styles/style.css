@@ -36,3 +36,12 @@ table#cooks, table#cooks td {
 table#cooks tr:first-child{
   font-weight: bold;
 }
+
+tr.cookinfo{
+  cursor:pointer;
+}
+
+tr.cookinfo:hover{
+  background: gray;
+  color:white;
+}

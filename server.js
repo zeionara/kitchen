@@ -32,6 +32,33 @@ app.post("/addnew_handler",jsonParser,function(request,response){
     response.json("Accepted");
 });
 
+app.post("/edit_handler",jsonParser,function(request,response){
+    if(!request.body) return response.sendStatus(400);
+
+    var rb = request.body;
+
+    connection.query("UPDATE cooks SET name = '"+rb.name+"', surname = '"+rb.surname+"', patronymic = '"+rb.patronymic+"', russian = "+rb.russian+", italian = "+rb.italian+
+    ", japanese = "+rb.japanese+", morningshifts = "+rb.morningshifts+", eveningshifts = "+rb.eveningshifts+", necessityshiftstime = "+rb.necessityshiftstime+
+    ", dayduration = "+rb.dayduration+", necessitydayduration = "+rb.necessitydayduration+", workingmode_5_2 = "+rb.workingmode_5_2+", workingmode_2_2 = "+
+    rb.workingmode_2_2+" WHERE cookid = "+rb.cookid+";",function(error,result,fields){
+      console.log(error);
+      console.log(result);
+    });
+
+    response.json("Accepted");
+});
+
+app.post("/delete_handler",jsonParser,function(request,response){
+    if(!request.body) return response.sendStatus(400);
+
+    connection.query("DELETE FROM cooks WHERE cookid = "+request.body.cookid+";",function(error,result,fields){
+      console.log(error);
+      console.log(result);
+    });
+
+    response.json("Accepted");
+});
+
 app.post("/load_cooks_handler",jsonParser,function(request, response){
   console.log("Loading info ...");
 
