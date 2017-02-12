@@ -15,6 +15,14 @@ label{
   color:red
 }
 
+.notification{
+  color:green;
+}
+
 .error input{
  border: 1px solid red;
+}
+
+.notification input{
+ border: 1px solid green;
 }

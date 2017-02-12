@@ -7,6 +7,14 @@ function showError(container, errorMessage) {
       container.appendChild(msgElem);
 }
 
+function showNotification(container, notificationMessage) {
+      container.className = 'notification';
+      var msgElem = document.createElement('span');
+      msgElem.className = "notification-message";
+      msgElem.innerHTML = notificationMessage;
+      container.appendChild(msgElem);
+}
+
 function resetError(container) {
   container.className = '';
   if (container.lastChild.className == "error-message") {
@@ -14,7 +22,14 @@ function resetError(container) {
   }
 }
 
-function validate(form) {
+function resetNotification(container) {
+  container.className = '';
+  if (container.lastChild.className == "notification-message") {
+    container.removeChild(container.lastChild);
+  }
+}
+
+function isValid(form) {
   var elems = form.elements;
   var RegLetters = new RegExp("^[A-zА-яЁё]+$");
   var valid = true;
@@ -28,12 +43,6 @@ function validate(form) {
   resetError(elems.surname.parentNode);
   if (!(elems.surname.value && RegLetters.test(elems.surname.value))) {
     showError(elems.surname.parentNode, 'Please, type valid surname');
-    valid = false;
-  }
-
-  resetError(elems.patronymic.parentNode);
-  if (!(elems.patronymic.value && RegLetters.test(elems.patronymic.value))) {
-    showError(elems.patronymic.parentNode, 'Please, type valid patronymic');
     valid = false;
   }
 
@@ -55,7 +64,51 @@ function validate(form) {
     valid = false;
   }
 
-  if (valid){
-    form.submit();
-  }
+  return valid;
 }
+
+$(document).ready(function(){
+  $("form#addnew").submit(function(e){
+    e.preventDefault();
+
+    if(isValid(this)){
+      var name = this.elements["name"].value;
+      var surname = this.elements["surname"].value;
+      var patronymic = this.elements["patronymic"].value;
+
+      var japanese = this.elements["japanese"].checked;
+      var italian = this.elements["italian"].checked;
+      var russian = this.elements["russian"].checked;
+
+      var shiftstime = this.elements["shiftstime"].value;
+      var necessityshiftstime = this.elements["necessityshiftstime"].checked;
+
+      var dayduration = this.elements["dayduration"].value;
+      var necessitydayduration = this.elements["necessitydayduration"].checked;
+
+      var workingmode = this.elements["workingmode"].value;
+
+      var elems = this.elements;
+
+      $.ajax({
+        type : "post",
+        url : "/addnew_handler",
+        data : JSON.stringify({name : name, surname : surname, patronymic : patronymic, russian : russian, italian : italian, japanese : japanese, shiftstime : shiftstime,
+        necessityshiftstime : necessityshiftstime, dayduration : dayduration, necessitydayduration : necessitydayduration, workingmode : workingmode}),
+        dataTpe : "json",
+        contentType : "application/json",
+        success : function(data){
+          console.log(data);
+          resetError(elems.submit.parentNode);
+          resetNotification(elems.submit.parentNode);
+          if (data=="Accepted") {
+            showNotification(elems.submit.parentNode, 'New cook added');
+          } else {
+            showError(elems.submit.parentNode, 'New cook wasn\'t added : '+data);
+          }
+        },
+      });//ajax
+    };//if(isValid(this))
+
+  })
+})
