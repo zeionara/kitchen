@@ -333,6 +333,32 @@ function deleteCook(){
   });//ajax
 }
 
+function switchCooksVisibility(){
+  if($("table#cooks").css("display") == "table"){
+    document.getElementById("hide_cooks").innerHTML = "Show";
+    $("table#cooks").css("display","none");
+  } else {
+    document.getElementById("hide_cooks").innerHTML = "Hide";
+    $("table#cooks").css("display","table");
+  }
+}
+
+function createScedule(){
+  var num_of_restaurants = document.getElementById("num_of_restaurants").value;
+
+  $.ajax({
+    type : "post",
+    url : "/create_scedule_handler",
+    data : JSON.stringify({num_of_restaurants : num_of_restaurants}),
+    dataTpe : "json",
+    contentType : "application/json",
+    success : function(data){
+      console.log(data);
+      loadCooksInfo();
+    },
+  });//ajax
+}
+
 $(document).ready(function(){
 
   loadCooksInfo();
@@ -341,6 +367,8 @@ $(document).ready(function(){
 
   $("button#load_cooks").click(loadCooksInfo);
 
+  $("button#hide_cooks").click(switchCooksVisibility);
+
   $("input#delete").click(deleteCook);
 
   $("table#cooks").click(initializeEditingCook);
@@ -348,4 +376,6 @@ $(document).ready(function(){
   $('#modal_close, #overlay').click(hideEditingForm);
 
   $("form#edit").submit(editCook);
+
+  $("button#create_scedule").click(createScedule);
 });
