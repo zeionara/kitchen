@@ -179,7 +179,7 @@ function handleConfigurations(cooks){
 }
 
 function createScedule(cooks,num_of_restaurants){
-  var num_of_days = 2;
+  var num_of_days = 30;
   var num_of_kitchens = 3;
 
   var preferring_constraint = 1;
@@ -254,7 +254,7 @@ function createScedule(cooks,num_of_restaurants){
       }// for each kitchen
     }// while restaurants isn't filled
   }// for each day in month
-  showSchedule(schedule);
+  //showSchedule(schedule);
   return schedule;
 }
 
