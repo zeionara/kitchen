@@ -170,7 +170,7 @@ function getCooksAttributes(cook){
   return cook_config;
 }
 
-function handleConfigurations(cooks){
+function handleConfigures(cooks){
   var cooks_attributes = new Array(cooks.length);//here we will keep additional attributes of cooks
 
   for (i in cooks) cooks_attributes[i] = getCooksAttributes(cooks[i]);
@@ -184,7 +184,7 @@ function createScedule(cooks,num_of_restaurants){
 
   var preferring_constraint = 1;
   var schedule = initializeSchedule(schedule, num_of_days, num_of_restaurants, num_of_kitchens)
-  var cooks_attributes = handleConfigurations(cooks);
+  var full_cooks_configs = handleConfigures(cooks);
   var time_restaurants = initializeTimeRestaurants(num_of_kitchens, num_of_restaurants);
 
   var counter = 0;
@@ -192,10 +192,10 @@ function createScedule(cooks,num_of_restaurants){
 
   for (var day = 0; day < num_of_days; day++){//for each day in month
     preferring_constraint = 1;//firstly try to create schedule, which will be preferred for all
-    unbusyAll(cooks_attributes);
+    unbusyAll(full_cooks_configs);
     clearTimeRestaurants(time_restaurants);
     while(!isAllBusy(time_restaurants)){// while restaurants is not enough full of cooks
-      if (isAllCooksBusy(cooks_attributes)) {
+      if (isAllCooksBusy(full_cooks_configs)) {
         return time_restaurants;//no way because can't find unbusy cook
       }
       for (var g = 0; g < num_of_kitchens; g++){//for each kitchen
@@ -203,7 +203,7 @@ function createScedule(cooks,num_of_restaurants){
           if (time_restaurants[g][h] == 24) continue;// we don't need to check handled restaurants again
           broke = false;
           for (var i = 0; i < cooks.length; i++){// for each cook
-            if(cooks_attributes[i].busy == 1){
+            if(full_cooks_configs[i].busy == 1){
               if (i == (cooks.length - 1)){
                 if (preferring_constraint == 1){
                   preferring_constraint = 0;
@@ -214,32 +214,39 @@ function createScedule(cooks,num_of_restaurants){
               continue;// if cook already busy (or get rest today), skip him
             }
 
-            if (handleWorkCounters(cooks_attributes[i], 1, 5)) continue;//must we give to this cook a day rest?
+            if (handleWorkCounters(full_cooks_configs[i], 1, 5)) continue;//must we give to this cook a day rest?
 
-            if (handleWorkCounters(cooks_attributes[i], 0, 2)) continue;//must we give to this cook a day rest?
+            if (handleWorkCounters(full_cooks_configs[i], 0, 2)) continue;//must we give to this cook a day rest?
 
-            for (var l = 0; l < cooks_attributes[i].days.length; l++){//for each configure of the day
+            //for (var j = 0; j < full_cooks_configs[i].daysets.length; j++){//for each dayset
 
-              if ((cooks_attributes[i].days[l].begin_hour == time_restaurants[g][h]) &&// if it is required time at the moment
-                (cooks_attributes[i].days[l].preferred >= preferring_constraint) &&//if it is enough preferred
-                (((24-cooks_attributes[i].days[l].end_hour) >= 4)||
-                (cooks_attributes[i].days[l].end_hour==24))){//if it is correct day duration at the situation
+              //for (var k = 0; k < full_cooks_configs[i].daysets[j].days.length; k++){//for each day
 
-                if ((g==0) && (cooks[i].russian == 1)){
-                  broke = writeCookEntry(day, h, l, cooks[i], cooks_attributes[i], "russian", time_restaurants[g], schedule[day][h][g]);
-                  break;
-                }
-                if ((g==1) && (cooks[i].italian == 1)){
-                  broke = writeCookEntry(day, h, l, cooks[i], cooks_attributes[i], "italian", time_restaurants[g], schedule[day][h][g]);
-                  break;
-                }
-                if ((g==2) && (cooks[i].japanese == 1)){
-                  broke = writeCookEntry(day, h, l, cooks[i], cooks_attributes[i], "japanese", time_restaurants[g], schedule[day][h][g]);
-                  break;
-                }
+                for (var l = 0; l < full_cooks_configs[i].days.length; l++){//for each configure of the day
 
-              }//large if
-            }//for each configure of the day
+                  if ((full_cooks_configs[i].days[l].begin_hour == time_restaurants[g][h]) &&// if it is required time at the moment
+                  (full_cooks_configs[i].days[l].preferred >= preferring_constraint) &&//if it is enough preferred
+                  (((24-full_cooks_configs[i].days[l].end_hour) >= 4)||
+                  (full_cooks_configs[i].days[l].end_hour==24))){//if it is correct day duration at the situation
+
+                    if ((g==0) && (cooks[i].russian == 1)){
+                      broke = writeCookEntry(day, h, l, cooks[i], full_cooks_configs[i], "russian", time_restaurants[g], schedule[day][h][g]);
+                      break;
+                    }
+                    if ((g==1) && (cooks[i].italian == 1)){
+                      broke = writeCookEntry(day, h, l, cooks[i], full_cooks_configs[i], "italian", time_restaurants[g], schedule[day][h][g]);
+                      break;
+                    }
+                    if ((g==2) && (cooks[i].japanese == 1)){
+                      broke = writeCookEntry(day, h, l, cooks[i], full_cooks_configs[i], "japanese", time_restaurants[g], schedule[day][h][g]);
+                      break;
+                    }
+                  }//large if
+                }//for each configure of the day
+                //if (broke) break;
+              //}//for each day
+              //if (broke) break;
+            //}//for each dayset
             if (broke){
               break;
             } else if (i == (cooks.length - 1)){
@@ -307,6 +314,9 @@ function initializeTimeRestaurants(num_of_kitchens, num_of_restaurants){
 }
 
 function writeCookEntry(day,h,l, cook, cook_config, qualification, time_kitchen_entry, kitchen_entry){
+  console.log(day+" "+cook.name+" "+cook.surname+" "+cook_config.days[l].begin_hour+":00 - "+
+  cook_config.days[l].end_hour+":00 at "+(h + 1)+" restaurant as "+qualification);
+
   var cook_entry = {};
   cook_entry.id = cook.cookid;
   cook_entry.snp = cook.surname+" "+cook.name+" "+cook.patronymic;
