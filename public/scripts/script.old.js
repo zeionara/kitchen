@@ -223,19 +223,19 @@ function isValid(form) {
   return valid;
 }
 
-function setAlternative(rawElement, form_id, old_attribute, new_attribute, good_value, new_good, new_bad){
-  if(rawElement.getElementsByClassName(old_attribute)[0].innerHTML == good_value){
-    document.getElementById(form_id).elements[new_attribute].value = new_good;
+function setAlternative(rawElement, form_id, qualifications, new_attribute, good_value, new_good, new_bad){
+  if(rawElement.getElementsByClassName(qualifications)[0].innerHTML == good_value){
+    document.getElementById(form_id).elements[qualifications].value = new_good;
   } else {
-    document.getElementById(form_id).elements[new_attribute].value = new_bad;
+    document.getElementById(form_id).elements[qualifications].value = new_bad;
   }
 }
 
-function setSwitcher(rawElement, form_id, old_attribute, new_attribute, good_value){
-  if(rawElement.getElementsByClassName(old_attribute)[0].innerHTML == good_value){
-    document.getElementById(form_id).elements[new_attribute].checked = true;
+function setSwitcher(rawElement, form_id, qualifications, new_attribute, good_value){
+  if(rawElement.getElementsByClassName(qualifications)[0].innerHTML == good_value){
+    document.getElementById(form_id).elements[qualifications].checked = true;
   } else {
-    document.getElementById(form_id).elements[new_attribute].checked = false;
+    document.getElementById(form_id).elements[qualifications].checked = false;
   }
 }
 
@@ -247,26 +247,73 @@ function initializeEditingCook(e){
     cid = rawElement.getElementsByClassName("cookid")[0].innerHTML;
     document.getElementById("edit").elements["name"].value = rawElement.getElementsByClassName("name")[0].innerHTML;
     document.getElementById("edit").elements["surname"].value = rawElement.getElementsByClassName("surname")[0].innerHTML;
+    if(rawElement.getElementsByClassName("patronymic")[0].innerHTML != "no"){
+      document.getElementById("edit").elements["patronymic"].value = rawElement.getElementsByClassName("patronymic")[0].innerHTML;
+    } else {
+      document.getElementById("edit").elements["patronymic"].value = "";
+    }
 
-    setAlternative(rawElement, "edit", "patronymic", "patronymic", "no", "", rawElement.getElementsByClassName("patronymic")[0].innerHTML);
+    /*if(rawElement.getElementsByClassName("russian")[0].innerHTML == "yes"){
+      document.getElementById("edit").elements["russian"].checked = true;
+    } else {
+      document.getElementById("edit").elements["russian"].checked = false;
+    }*/
 
     setSwitcher(rawElement, "edit", "russian", "russian", "yes");
 
+    /*if(rawElement.getElementsByClassName("italian")[0].innerHTML == "yes"){
+      document.getElementById("edit").elements["italian"].checked = true;
+    } else {
+      document.getElementById("edit").elements["italian"].checked = false;
+    }*/
+
     setSwitcher(rawElement, "edit", "italian", "italian", "yes");
+
+    /*if(rawElement.getElementsByClassName("japanese")[0].innerHTML == "yes"){
+      document.getElementById("edit").elements["japanese"].checked = true;
+    } else {
+      document.getElementById("edit").elements["japanese"].checked = false;
+    }*/
 
     setSwitcher(rawElement, "edit", "japanese", "japanese", "yes");
 
+    /*if(rawElement.getElementsByClassName("morningshifts")[0].innerHTML == "yes"){
+      document.getElementById("edit").elements["shiftstime"].value = "morning";
+    } else {
+      document.getElementById("edit").elements["shiftstime"].value = "evening";
+    }*/
+
     setAlternative(rawElement, "edit", "morningshifts", "shiftstime", "yes", "morning", "evening");
+
+    /*if(rawElement.getElementsByClassName("necessityshiftstime")[0].innerHTML == "yes"){
+      document.getElementById("edit").elements["necessityshiftstime"].checked = true;
+    } else {
+      document.getElementById("edit").elements["necessityshiftstime"].checked = false;
+    }*/
 
     setSwitcher(rawElement, "edit", "necessityshiftstime", "necessityshiftstime", "yes");
 
     document.getElementById("edit").elements["dayduration"].value = rawElement.getElementsByClassName("dayduration")[0].innerHTML;
 
+    /*if(rawElement.getElementsByClassName("necessitydayduration")[0].innerHTML == "yes"){
+      document.getElementById("edit").elements["necessitydayduration"].checked = true;
+    } else {
+      document.getElementById("edit").elements["necessitydayduration"].checked = false;
+    }*/
+
     setSwitcher(rawElement, "edit", "necessitydayduration", "necessitydayduration", "yes");
+
+    /*if(rawElement.getElementsByClassName("workingmode")[0].innerHTML == "5/2"){
+      document.getElementById("edit").elements["workingmode"].value = "5/2";
+    } else {
+      document.getElementById("edit").elements["workingmode"].value = "2/2";
+    }*/
 
     setAlternative(rawElement, "edit", "workingmode", "workingmode", "5/2", "5/2", "2/2");
 
     showEditingForm();
+
+    console.log(rawElement);
   }
 }
 
@@ -305,9 +352,13 @@ function deleteCook(){
     success : function(data){
       console.log(data);
       loadCooksInfo();
-      showActionResult(document.getElementById("edit").elements, data, "Accepted", "Cook deleted", "Cook wasn't deleted");
+      if (data=="Accepted") {
+        showNotification(elems.submit.parentNode, 'Changes saved');
+      } else {
+        showError(elems.submit.parentNode, 'Changes wasn\'t saved : '+data);
+      }
     },
-  });
+  });//ajax
 }
 
 function switchCooksVisibility(){
@@ -351,6 +402,7 @@ function showAntiSchedule(data){
         }
       }
   }
+
 }
 
 function showSchedule(data){
@@ -429,6 +481,7 @@ function createScedule(){
       } else {
         showSchedule(data);
       }
+
       //loadCooksInfo();
     },
   });//ajax
