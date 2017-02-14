@@ -72,7 +72,7 @@ app.post("/create_scedule_handler",jsonParser,function(request,response){
       var schedule = createScedule(result,parseInt(request.body.num_of_restaurants));
       response.json(schedule);
     });
-    
+
 });
 
 function generateDayConfig(qualification, hour, dayduration, preferred){
@@ -80,8 +80,6 @@ function generateDayConfig(qualification, hour, dayduration, preferred){
   day_config.qualification = qualification;
   day_config.begin_hour = hour;
   day_config.end_hour = hour + dayduration;
-  day_config.watched = 0;
-  day_config.selected = 0;
   day_config.preferred = preferred;
   return day_config;
 }
@@ -149,286 +147,196 @@ function handleNecessityDayDuration(necessitydayduration, dayDuration, necessity
   }// if dayduration is not very important
 }
 
-function getDayNameForLongWeek(workmode_config, i){
-  return "day";
+function handleDays(cook, cook_config){
+  if (cook.russian == 1) handleNecessityDayDuration(cook.necessitydayduration, cook.dayduration,
+    cook.necessityshiftstime, cook.morningshifts, cook_config.days, "russian");
+
+  if (cook.italian == 1) handleNecessityDayDuration(cook.necessitydayduration, cook.dayduration,
+    cook.necessityshiftstime, cook.morningshifts, cook_config.days, "italian");
+
+  if (cook.japanese == 1) handleNecessityDayDuration(cook.necessitydayduration, cook.dayduration,
+    cook.necessityshiftstime, cook.morningshifts, cook_config.days, "japanese");
 }
 
-function getDayNameForShortWeek(workmode_config, i){
-  return "day";
-}
-
-function handleDays(workmode_config, cook, dayset){
-  var counter = 0;
-  for (var i = 0; i < 30; i++){
-    counter++;
-    var day = {};
-
-    if (workmode_config.length = 5){
-      day.name = getDayNameForLongWeek(workmode_config, i);
-      //workmode_configs[i % 5];
-    } else {
-      day.name = getDayNameForShortWeek(workmode_config, i);
-    }
-
-    day.selected = 0;
-    day.configs = [];
-
-    if (cook.russian == 1) handleNecessityDayDuration(cook.necessitydayduration, cook.dayduration, cook.necessityshiftstime, cook.morningshifts, day.configs, "russian");
-
-    if (cook.italian == 1) handleNecessityDayDuration(cook.necessitydayduration, cook.dayduration, cook.necessityshiftstime, cook.morningshifts, day.configs, "italian");
-
-    if (cook.japanese == 1) handleNecessityDayDuration(cook.necessitydayduration, cook.dayduration, cook.necessityshiftstime, cook.morningshifts, day.configs, "japanese");
-
-    dayset.days.push(day);
-  }// for each possible set of working days in month
-}
-
-function handleWorkMode(cook){
-  var all_shifts_configures = cook.workingmode_5_2 == 1? all_configs_5_2 : all_configs_2_2;
+function getCooksAttributes(cook){
   var cook_config = {};
-  cook_config.selected = 0;
   cook_config.workdaycounter = 0;
   cook_config.restdaycounter = 0;
   cook_config.busy = 0;
   cook_config.workingmode_5_2 = cook.workingmode_5_2;
-  cook_config.daysets = [];
-  for (j in all_shifts_configures){// for each possible day configuration
-    var dayset = {};
-    dayset.selected = 0;
-    dayset.days = [];
-    handleDays(all_shifts_configures[j], cook, dayset);
-    cook_config.daysets.push(dayset);
-  }
+  cook_config.days = [];//set of possible roles in working day
+
+  handleDays(cook, cook_config);
   return cook_config;
 }
 
 function handleConfigures(cooks){
-  var full_cooks_configs = new Array(cooks.length);
+  var cooks_attributes = new Array(cooks.length);//here we will keep additional attributes of cooks
 
-  all_configs_5_2 = [
-    ["mon", "tue", "wed", "thu", "fri"],
-    ["tue", "wed", "thu", "fri", "sat"],
-    ["wed", "thu", "fri", "sat", "sun"],
-    ["thu", "fri", "sat", "sun", "mon"],
-    ["fri", "sat", "sun", "mon", "tue"],
-    ["sat", "sun", "mon", "tue", "wed"],
-    ["sun", "mon", "tue", "wed", "thu"],
-  ];
+  for (i in cooks) cooks_attributes[i] = getCooksAttributes(cooks[i]);
 
-  all_configs_2_2 = [
-    ["mon", "tue", "fri", "sat", "tue", "wed", "sat", "sun"],
-    ["tue", "wed", "sat", "sun", "wed", "thu", "sun", "mon"],
-    ["wed", "thu", "sun", "mon", "thu", "fri", "mon", "tue"],
-    ["thu", "fri", "mon", "tue", "fri", "sat", "tue", "wed"],
-  ];
-
-  for (i in cooks){
-    full_cooks_configs[i] = handleWorkMode(cooks[i]);
-    //console.log("Full cooks config "+i+" : "+full_cooks_configs[i]);
-  }
-
-  return full_cooks_configs;
+  return cooks_attributes;
 }
 
 function createScedule(cooks,num_of_restaurants){
   var num_of_days = 2;
-  var schedule = new Array(num_of_days);//create in schedule entry for each day in month
   var num_of_kitchens = 3;
 
+  var preferring_constraint = 1;
+  var schedule = initializeSchedule(schedule, num_of_days, num_of_restaurants, num_of_kitchens)
+  var full_cooks_configs = handleConfigures(cooks);
+  var time_restaurants = initializeTimeRestaurants(num_of_kitchens, num_of_restaurants);
+
+  var counter = 0;
+  var broke = false;
+
+  for (var day = 0; day < num_of_days; day++){//for each day in month
+    preferring_constraint = 1;//firstly try to create schedule, which will be preferred for all
+    unbusyAll(full_cooks_configs);
+    clearTimeRestaurants(time_restaurants);
+    while(!isAllBusy(time_restaurants)){// while restaurants is not enough full of cooks
+      if (isAllCooksBusy(full_cooks_configs)) {
+        return time_restaurants;//no way because can't find unbusy cook
+      }
+      for (var g = 0; g < num_of_kitchens; g++){//for each kitchen
+        for (var h = 0; h < num_of_restaurants; h++){// for each restaurant
+          if (time_restaurants[g][h] == 24) continue;// we don't need to check handled restaurants again
+          broke = false;
+          for (var i = 0; i < cooks.length; i++){// for each cook
+            if(full_cooks_configs[i].busy == 1){
+              if (i == (cooks.length - 1)){
+                if (preferring_constraint == 1){
+                  preferring_constraint = 0;
+                  continue;
+                }
+                return time_restaurants;//no way because can't find required cook
+              }
+              continue;// if cook already busy (or get rest today), skip him
+            }
+
+            if (handleWorkCounters(full_cooks_configs[i], 1, 5)) continue;//must we give to this cook a day rest?
+
+            if (handleWorkCounters(full_cooks_configs[i], 0, 2)) continue;//must we give to this cook a day rest?
+
+            for (var l = 0; l < full_cooks_configs[i].days.length; l++){//for each configure of the day
+
+              if ((full_cooks_configs[i].days[l].begin_hour == time_restaurants[g][h]) &&// if it is required time at the moment
+                (full_cooks_configs[i].days[l].preferred >= preferring_constraint) &&//if it is enough preferred
+                (((24-full_cooks_configs[i].days[l].end_hour) >= 4)||
+                (full_cooks_configs[i].days[l].end_hour==24))){//if it is correct day duration at the situation
+
+                if ((g==0) && (cooks[i].russian == 1)){
+                  broke = writeCookEntry(day, h, l, cooks[i], full_cooks_configs[i], "russian", time_restaurants[g], schedule[day][h][g]);
+                  break;
+                }
+                if ((g==1) && (cooks[i].italian == 1)){
+                  broke = writeCookEntry(day, h, l, cooks[i], full_cooks_configs[i], "italian", time_restaurants[g], schedule[day][h][g]);
+                  break;
+                }
+                if ((g==2) && (cooks[i].japanese == 1)){
+                  broke = writeCookEntry(day, h, l, cooks[i], full_cooks_configs[i], "japanese", time_restaurants[g], schedule[day][h][g]);
+                  break;
+                }
+
+              }//large if
+            }//for each configure of the day
+            if (broke){
+              break;
+            } else if (i == (cooks.length - 1)){
+              if (preferring_constraint == 1){
+                preferring_constraint = 0;//try to find less preferred shifts
+                continue;
+              }
+              return time_restaurants;
+            }
+          }// for each cook
+        }// for each restaurant
+      }// for each kitchen
+    }// while restaurants isn't filled
+  }// for each day in month
+  showSchedule(schedule);
+  return schedule;
+}
+
+function showSchedule(schedule){
+  console.log("Schedule:");
+  for (var i = 0; i < schedule.length; i++){
+    console.log((i+1)+" day :");
+    for (var j = 0; j < schedule[i].length; j++){
+      console.log("   "+(j+1) + " restaurant :");
+      for (var k = 0; k < schedule[i][j].length; k++){
+        if(k==0) console.log("      russian kitchen :");
+        if(k==1) console.log("      italian kitchen :");
+        if(k==2) console.log("      japanese kitchen :");
+        for (var l = 0; l < schedule[i][j][k].length; l++){
+          console.log("         "+schedule[i][j][k][l].snp+" : "+schedule[i][j][k][l].worktime);
+        }// for each cook
+      }// for each kitchen
+    }// for each restaurant
+  }// for each day
+}
+
+function clearTimeRestaurants(time_restaurants){
+  for (var j = 0; j < time_restaurants.length; j++){
+    for (var i = 0; i < time_restaurants[j].length; i++){//clear restaurant's state
+      time_restaurants[j][i] = 10;
+    }
+  }
+}
+
+function initializeSchedule(schedule, num_of_days, num_of_restaurants, num_of_kitchens){
+  var schedule = new Array(num_of_days);
   for (var i = 0; i < num_of_days; i++){
     schedule[i] = new Array(num_of_restaurants);//create in day-entry entries for each restaurant-entry
     for (var j = 0; j < num_of_restaurants; j++){
       schedule[i][j] = new Array(num_of_kitchens);//create in restaurant-entry entries for each kitchen
       for (var k = 0; k < num_of_kitchens; k++){
         schedule[i][j][k] = [];//create in kitchen-entry place for cooks info
-      }
-    }
-  }
+      }// for each kitchen
+    }// for each restaurant
+  }// for each day
+  return schedule;
+}
 
-  /*for (var i = 0; i < num_of_days; i++){
-    schedule[i] = new Array(3);// in each day-entry create entries for each kitchen
-    for (var j = 0; j < 3; j++){
-      schedule[i][j] = new Array(num_of_restaurants);// in each kitchen-entry create entries for each restaurant
-      for (var k = 0; k < num_of_restaurants; k++){
-        schedule[i][j][k] = [];// in each restaurant-entry create place for cook-entries
-      }
-    }
-  }*/
-
-  var full_cooks_configs = handleConfigures(cooks);
-  //console.log("1th day in 1th cook config's 1th dayset has "+full_cooks_configs[5].daysets[0].days[0].configs.length+" days configs");
-  var counter = 0;
-  var broke = false;
-  var time_restaurants = new Array(3);//0 - russain, 1 - italian, 2 - japanese
-  for (var i = 0; i < 3; i++){
+function initializeTimeRestaurants(num_of_kitchens, num_of_restaurants){
+  var time_restaurants = new Array(num_of_kitchens);
+  for (var i = 0; i < num_of_kitchens; i++){
     time_restaurants[i] = new Array(num_of_restaurants);
   }
-  console.log("Schedule:");
-  for (var day = 0; day < num_of_days; day++){//for each day in month
-    unbusyAll(full_cooks_configs);
-    for (var j = 0; j < 3; j++){
-      for (var i = 0; i < num_of_restaurants; i++){//clear restaurant's state
-        time_restaurants[j][i] = 10;
-      }
-    }
-    while(!isAllBusy(time_restaurants)){// while restaurant's state is not same with required
-      if (isAllCooksBusy(full_cooks_configs)) {
-        console.log("It's inpossible");
-        console.log("End state : "+time_restaurants);
-        return time_restaurants;
-      }
-      for (var g = 0; g < 3; g++){
-      for (var h = 0; h < num_of_restaurants; h++){// for each restaurant
-        if (time_restaurants[g][h] == 24) continue;// we don't need to check handled restaurants again
-        broke = false;
-        for (var i = 0; i < cooks.length; i++){// for each cook
-          //console.log(cooks[i].name+" "+cooks[i].surname+" "+full_cooks_configs[i].workdaycounter+" "+full_cooks_configs[i].workingmode_2_2);
-          if(full_cooks_configs[i].busy == 1){
-            if (i == (cooks.length - 1)){
-              console.log("It's impossible");
-              console.log("End state : "+time_restaurants);
-              return time_restaurants;
-            }
-            continue;// if cook already busy (or get rest today), skip him
-          }
-          if ((full_cooks_configs[i].workingmode_5_2 == 1) && (full_cooks_configs[i].workdaycounter == 5)){// if cook's workmode 5/2 and he worked 5 days
-            if (full_cooks_configs[i].restdaycounter < 2){// if he isn't got rest 2 days, skip him for today
-              full_cooks_configs[i].busy = 1;
-              full_cooks_configs[i].restdaycounter++;
-              continue;
-            } else {// if he has got 2 rest days, set counters to 0 and try to give him work
-              full_cooks_configs[i].workdaycounter = 0;
-              full_cooks_configs[i].restdaycounter = 0;
-            }
-          }
+  return time_restaurants;
+}
 
-          if ((full_cooks_configs[i].workingmode_5_2 == 0) && (full_cooks_configs[i].workdaycounter == 2)){// if cook's workmode 2/2 and he worked 2 days
-            if (full_cooks_configs[i].restdaycounter < 2){// if he isn't got rest 2 days, skip him for today
-              //console.log(cooks[i].name+" --- "+cooks[i].surname+" "+full_cooks_configs[i].workdaycounter);
-              full_cooks_configs[i].busy = 1;
-              full_cooks_configs[i].restdaycounter++;
-              continue;
-            } else {// if he has got 2 rest days, set counters to 0 and try to give him work
-              full_cooks_configs[i].workdaycounter = 0;
-              full_cooks_configs[i].restdaycounter = 0;
-            }
-          }
+function writeCookEntry(day,h,l, cook, cook_config, qualification, time_kitchen_entry, kitchen_entry){
+  console.log(day+" "+cook.name+" "+cook.surname+" "+cook_config.days[l].begin_hour+":00 - "+
+  cook_config.days[l].end_hour+":00 at "+(h + 1)+" restaurant as "+qualification);
 
-          for (var j = 0; j < full_cooks_configs[i].daysets.length; j++){
-            for (var k = 0; k < full_cooks_configs[i].daysets[j].days.length; k++){
-              //console.log("-------");
-              for (var l = 0; l < full_cooks_configs[i].daysets[j].days[k].configs.length; l++){
+  var cook_entry = {};
+  cook_entry.id = cook.cookid;
+  cook_entry.snp = cook.surname+" "+cook.name+" "+cook.patronymic;
+  cook_entry.worktime = cook_config.days[l].begin_hour+":00 - "+cook_config.days[l].end_hour+":00";
 
-                //console.log("Required beginning : "+time_restaurants[h]);
-                //console.log("We have now "+full_cooks_configs[i].daysets[j].days[k].configs[l].begin_hour);
-                //console.log((full_cooks_configs[i].daysets[j].days[k].configs[l].begin_hour == time_restaurants[h]));
-                if ((full_cooks_configs[i].daysets[j].days[k].configs[l].begin_hour == time_restaurants[g][h]) &&
-                (((24-full_cooks_configs[i].daysets[j].days[k].configs[l].end_hour) >= 4)||(full_cooks_configs[i].daysets[j].days[k].configs[l].end_hour==24))){
-                  if ((g==0) && (cooks[i].russian == 1)){
-                    console.log(day+" "+cooks[i].name+" "+cooks[i].surname+" "+full_cooks_configs[i].daysets[j].days[k].configs[l].begin_hour+" - "+
-                    full_cooks_configs[i].daysets[j].days[k].configs[l].end_hour+" at "+(h + 1)+" restaurant as "+"russian");
+  //schedule[day][h][g]
+  kitchen_entry.push(cook_entry);
 
-                    var cook_entry = {};
-                    cook_entry.id = cooks[i].cookid;
-                    cook_entry.snp = cooks[i].surname+" "+cooks[i].name+" "+cooks[i].patronymic;
-                    cook_entry.worktime = full_cooks_configs[i].daysets[j].days[k].configs[l].begin_hour+" - "+full_cooks_configs[i].daysets[j].days[k].configs[l].end_hour;
+  //time_restaurants[g][h]
+  time_kitchen_entry[h] = cook_config.days[l].end_hour;
+  cook_config.workdaycounter++;
+  cook_config.busy = 1;
+  return true;
+}
 
-                    schedule[day][h][g].push(cook_entry);
-
-                    time_restaurants[g][h] = full_cooks_configs[i].daysets[j].days[k].configs[l].end_hour;
-                    full_cooks_configs[i].workdaycounter++;
-                    full_cooks_configs[i].busy = 1;
-                    broke = true;
-                    break;
-                  }
-                  if ((g==1) && (cooks[i].italian == 1)){
-                    console.log(day+" "+cooks[i].name+" "+cooks[i].surname+" "+full_cooks_configs[i].daysets[j].days[k].configs[l].begin_hour+" - "+
-                    full_cooks_configs[i].daysets[j].days[k].configs[l].end_hour+" at "+(h + 1)+" restaurant as "+"italian");
-
-                    var cook_entry = {};
-                    cook_entry.id = cooks[i].cookid;
-                    cook_entry.snp = cooks[i].surname+" "+cooks[i].name+" "+cooks[i].patronymic;
-                    cook_entry.worktime = full_cooks_configs[i].daysets[j].days[k].configs[l].begin_hour+" - "+full_cooks_configs[i].daysets[j].days[k].configs[l].end_hour;
-
-                    schedule[day][h][g].push(cook_entry);
-
-                    time_restaurants[g][h] = full_cooks_configs[i].daysets[j].days[k].configs[l].end_hour;
-                    full_cooks_configs[i].workdaycounter++;
-                    full_cooks_configs[i].busy = 1;
-                    broke = true;
-                    break;
-                  }
-                  if ((g==2) && (cooks[i].japanese == 1)){
-                    console.log(day+" "+cooks[i].name+" "+cooks[i].surname+" "+full_cooks_configs[i].daysets[j].days[k].configs[l].begin_hour+" - "+
-                    full_cooks_configs[i].daysets[j].days[k].configs[l].end_hour+" at "+(h + 1)+" restaurant as "+"japanese");
-
-                    var cook_entry = {};
-                    cook_entry.id = cooks[i].cookid;
-                    cook_entry.snp = cooks[i].surname+" "+cooks[i].name+" "+cooks[i].patronymic;
-                    cook_entry.worktime = full_cooks_configs[i].daysets[j].days[k].configs[l].begin_hour+" - "+full_cooks_configs[i].daysets[j].days[k].configs[l].end_hour;
-
-                    schedule[day][h][g].push(cook_entry);
-
-                    time_restaurants[g][h] = full_cooks_configs[i].daysets[j].days[k].configs[l].end_hour;
-                    full_cooks_configs[i].workdaycounter++;
-                    full_cooks_configs[i].busy = 1;
-                    broke = true;
-                    break;
-                  }
-                }
-                //console.log("trying..."+l+" to "+full_cooks_configs[i].daysets[j].days[k].configs.length+" at "+i);
-              }
-              //console.log("*************");
-              if (broke) break;
-            }
-
-            if (broke) break;
-          }
-          if (broke){
-            break;
-          } else if (i == (cooks.length - 1)){
-            console.log("It's impossible");
-            console.log("End state : "+time_restaurants);
-            return time_restaurants;
-            return ;
-          }
-
-        }// for each cook
-      }// for each restaurant
-    }// for each kitchen
-    }// while restaurants isn't filled
-  }// for each day in month
-  console.log(time_restaurants);
-  console.log(counter);
-  console.log(schedule);
-  for (var i = 0; i < num_of_days; i++){
-    console.log((i+1)+" day :");
-    for (var j = 0; j < num_of_restaurants; j++){
-      console.log((j+1) + " restaurant :");
-      for (var k = 0; k < num_of_kitchens; k++){
-        if(k==0) console.log("russian kitchen :");
-        if(k==1) console.log("italian kitchen :");
-        if(k==2) console.log("japanese kitchen :");
-        for (var l = 0; l < schedule[i][j][k].length; l++){
-          console.log(schedule[i][j][k][l].snp+" : "+schedule[i][j][k][l].worktime);
-        }
-      }
+function handleWorkCounters(cook_config, workingmode_5_2, workdaysmax){
+  if ((cook_config.workingmode_5_2 == workingmode_5_2) && (cook_config.workdaycounter >= workdaysmax)){// if cook's workmode 5/2 and he worked 5 days
+    if (cook_config.restdaycounter < 2){// if he isn't got rest 2 days, skip him for today
+      cook_config.busy = 1;
+      cook_config.restdaycounter++;
+      return true;//give him this day for rest
+    } else {// if he has got 2 rest days, set counters to 0 and try to give him work
+      cook_config.workdaycounter = 0;
+      cook_config.restdaycounter = 0;
     }
   }
-  return schedule;
-  /*  for (var j = 0; j < 3; j++){
-      if(j==0) console.log("russian kitchen :");
-      if(j==1) console.log("italian kitchen :");
-      if(j==2) console.log("japanese kitchen :");
-      for (var k = 0; k < schedule[i][j].length; k++){
-
-        for (var l = 0; l < schedule[i][j][k].length; l++){
-          console.log(schedule[i][j][k][l].snp+" : "+schedule[i][j][k][l].worktime);
-        }
-      }
-    }
-  }*/
-  //console.log("Full cooks configs : "+full_cooks_configs);
+  return false;
 }
 
 function isAllBusy(time_restaurants){

@@ -50,3 +50,20 @@ for (var i = 0; i < 3; i++){
     full_cooks_configs[i].push(countConfigures(cooks, all_configs_2_2));
   }
 }*/
+
+/*all_configs_5_2 = [
+  ["mon", "tue", "wed", "thu", "fri"],
+  ["tue", "wed", "thu", "fri", "sat"],
+  ["wed", "thu", "fri", "sat", "sun"],
+  ["thu", "fri", "sat", "sun", "mon"],
+  ["fri", "sat", "sun", "mon", "tue"],
+  ["sat", "sun", "mon", "tue", "wed"],
+  ["sun", "mon", "tue", "wed", "thu"],
+];
+
+all_configs_2_2 = [
+  ["mon", "tue", "fri", "sat", "tue", "wed", "sat", "sun"],
+  ["tue", "wed", "sat", "sun", "wed", "thu", "sun", "mon"],
+  ["wed", "thu", "sun", "mon", "thu", "fri", "mon", "tue"],
+  ["thu", "fri", "mon", "tue", "fri", "sat", "tue", "wed"],
+];*/
