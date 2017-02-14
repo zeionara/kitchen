@@ -87,3 +87,34 @@ table#cooks{
 .submit:hover{
   background:#5752EA;
 }
+
+.bad_schedule_header{
+  color: red;
+  padding-top : 10px;
+}
+
+.good_schedule_header{
+  color: #5752EA;
+  padding-top : 10px;
+}
+
+#bad_schedule_list, #good_schedule_list{
+  color : blue;
+  padding-left : 20px;
+}
+
+.day_list{
+  padding-left:40px;
+}
+
+.restaurant_list{
+  padding-left:60px;
+}
+
+.kitchen_list{
+  padding-left:80px;
+}
+
+#schedule{
+  padding-left:20px;
+}

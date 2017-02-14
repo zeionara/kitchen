@@ -2,6 +2,10 @@ function clearTable(table){
   while(table.childNodes.length > 2) table.removeChild(table.lastChild);
 }
 
+function clearSchedule(schedule){
+  while(schedule.childNodes.length > 0) schedule.removeChild(schedule.lastChild);
+}
+
 
 function loadCooksInfo(){
     console.log("pressed");
@@ -343,6 +347,101 @@ function switchCooksVisibility(){
   }
 }
 
+function showAntiSchedule(data){
+  clearSchedule(document.getElementById("schedule"));
+
+  var h3Elem = document.createElement('h3');
+  h3Elem.className = "bad_schedule_header";
+  h3Elem.innerHTML = "Can't make schedule with this params.";
+  document.getElementById("schedule").appendChild(h3Elem);
+
+  h3Elem = document.createElement('h3');
+  h3Elem.className = "bad_schedule_header";
+  h3Elem.innerHTML = "Required : ";
+  document.getElementById("schedule").appendChild(h3Elem);
+
+  var ulElem = document.createElement('ul');
+  ulElem.id = "bad_schedule_list";
+  document.getElementById("schedule").appendChild(ulElem);
+
+  var kitchen;
+  for (var i = 0; i < data.length; i++){
+      if (i == 0) kitchen = "russian";
+      if (i == 1) kitchen = "italian";
+      if (i == 2) kitchen = "japanese";
+
+      for (var j = 0; j < data[i].length; j++){
+        if (data[i][j] < 24){
+          var liElem = document.createElement("li");
+          liElem.innerHTML = "Cook(s) for "+kitchen+" kitchen in "+(j+1)+" restaurant for time "+data[i][j]+":00 - 24:00";
+          document.getElementById("bad_schedule_list").appendChild(liElem);
+        }
+      }
+  }
+
+}
+
+function showSchedule(data){
+  clearSchedule(document.getElementById("schedule"));
+
+  var h3Elem = document.createElement('h3');
+  h3Elem.className = "good_schedule_header";
+  h3Elem.innerHTML = "Schedule";
+  document.getElementById("schedule").appendChild(h3Elem);
+
+  var ulElem = document.createElement('ul');
+  ulElem.id = "good_schedule_list";
+
+  document.getElementById("schedule").appendChild(ulElem);
+
+  var kitchen;
+  for (var i = 0; i < data.length; i++){
+    var liElem = document.createElement("li");
+    liElem.id = "day_"+i;
+    liElem.innerHTML = (i+1)+" day :";
+    document.getElementById("good_schedule_list").appendChild(liElem);
+
+    ulElem = document.createElement('ul');
+    ulElem.id = "good_schedule_list_day_"+i;
+    ulElem.className = "day_list";
+    document.getElementById("day_"+i).appendChild(ulElem);
+
+    for (var j = 0; j < data[i].length; j++){
+      liElem = document.createElement("li");
+      liElem.id = "day_"+i+"_restaurant_"+j;
+      liElem.innerHTML = (j+1)+" restaurant :";
+      document.getElementById("good_schedule_list_day_"+i).appendChild(liElem);
+
+      ulElem = document.createElement('ul');
+      ulElem.id = "good_schedule_list_day_"+i+"_restaurant_"+j;
+      ulElem.className = "restaurant_list";
+      document.getElementById("day_"+i+"_restaurant_"+j).appendChild(ulElem);
+
+      for (var k = 0; k < data[i][j].length; k++){
+        if (k == 0) kitchen = "russian";
+        if (k == 1) kitchen = "italian";
+        if (k == 2) kitchen = "japanese";
+
+        liElem = document.createElement("li");
+        liElem.id = "day_"+i+"_restaurant_"+j+"_kitchen_"+k;
+        liElem.innerHTML = kitchen+" kitchen : ";
+        document.getElementById("good_schedule_list_day_"+i+"_restaurant_"+j).appendChild(liElem);
+
+        ulElem = document.createElement('ul');
+        ulElem.id = "good_schedule_list_day_"+i+"_restaurant_"+j+"_kitchen_"+k;
+        ulElem.className = "kitchen_list";
+        document.getElementById("day_"+i+"_restaurant_"+j+"_kitchen_"+k).appendChild(ulElem);
+
+        for (var l = 0; l < data[i][j][k].length; l++){
+          liElem = document.createElement("li");
+          liElem.innerHTML = data[i][j][k][l].snp+"( id = "+data[i][j][k][l].id+" ) : "+data[i][j][k][l].worktime;
+          document.getElementById("good_schedule_list_day_"+i+"_restaurant_"+j+"_kitchen_"+k).appendChild(liElem);
+        }
+      }
+    }
+  }
+}
+
 function createScedule(){
   var num_of_restaurants = document.getElementById("num_of_restaurants").value;
 
@@ -353,8 +452,13 @@ function createScedule(){
     dataTpe : "json",
     contentType : "application/json",
     success : function(data){
-      console.log(data);
-      loadCooksInfo();
+      if (typeof(data[0][0]) == "number"){
+        showAntiSchedule(data);
+      } else {
+        showSchedule(data);
+      }
+
+      //loadCooksInfo();
     },
   });//ajax
 }
