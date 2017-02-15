@@ -69,7 +69,7 @@ app.post("/create_scedule_handler",jsonParser,function(request,response){
 
     var result = connection.query("SELECT * FROM cooks",function(error,result,fields){
       if(error) return response.json(error);
-      var schedule = createScedule(result,parseInt(request.body.num_of_restaurants));
+      var schedule = createSchedule(result,parseInt(request.body.num_of_restaurants));
       response.json(schedule);
     });
 
@@ -178,7 +178,7 @@ function handleConfigurations(cooks){
   return cooks_attributes;
 }
 
-function createScedule(cooks,num_of_restaurants){
+function createSchedule(cooks,num_of_restaurants){
   var num_of_days = 30;
   var num_of_kitchens = 3;
 
@@ -223,7 +223,7 @@ function createScedule(cooks,num_of_restaurants){
               if ((cooks_attributes[i].days[l].begin_hour == time_restaurants[g][h]) &&// if it is required time at the moment
                 (cooks_attributes[i].days[l].preferred >= preferring_constraint) &&//if it is enough preferred
                 (((24-cooks_attributes[i].days[l].end_hour) >= 4)||
-                (cooks_attributes[i].days[l].end_hour==24))){//if it is correct day duration at the situation
+                (cooks_attributes[i].days[l].end_hour==24))){//if it is correct working day duration at the situation
 
                 if ((g==0) && (cooks[i].russian == 1)){
                   broke = writeCookEntry(day, h, l, cooks[i], cooks_attributes[i], "russian", time_restaurants[g], schedule[day][h][g]);
@@ -278,8 +278,8 @@ function showSchedule(schedule){
 
 function clearTimeRestaurants(time_restaurants){
   for (var j = 0; j < time_restaurants.length; j++){
-    for (var i = 0; i < time_restaurants[j].length; i++){//clear restaurant's state
-      time_restaurants[j][i] = 10;
+    for (var i = 0; i < time_restaurants[j].length; i++){
+      time_restaurants[j][i] = 10;//clear restaurant's state
     }
   }
 }
@@ -287,7 +287,7 @@ function clearTimeRestaurants(time_restaurants){
 function initializeSchedule(schedule, num_of_days, num_of_restaurants, num_of_kitchens){
   var schedule = new Array(num_of_days);
   for (var i = 0; i < num_of_days; i++){
-    schedule[i] = new Array(num_of_restaurants);//create in day-entry entries for each restaurant-entry
+    schedule[i] = new Array(num_of_restaurants);//create in day-entry entries for each restaurant
     for (var j = 0; j < num_of_restaurants; j++){
       schedule[i][j] = new Array(num_of_kitchens);//create in restaurant-entry entries for each kitchen
       for (var k = 0; k < num_of_kitchens; k++){

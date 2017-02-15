@@ -48,52 +48,67 @@ function showActionResult(form_elems, result, good_result, good_msg, bad_msg){
   }
 }
 
+function getRequestObject(action, form){
+  var cookid;
+
+  if(action == "edit") cookid = cid;
+
+  var name = form.elements["name"].value;
+  var surname = form.elements["surname"].value;
+  var patronymic = form.elements["patronymic"].value;
+
+  var japanese = form.elements["japanese"].checked;
+  var italian = form.elements["italian"].checked;
+  var russian = form.elements["russian"].checked;
+
+  var morningshifts = false;
+  var eveningshifts = false;
+  if (form.elements["shiftstime"].value == 'evening'){
+    eveningshifts = true;
+  } else {
+    morningshifts = true;
+  }
+
+  var necessityshiftstime = form.elements["necessityshiftstime"].checked;
+
+  var dayduration = form.elements["dayduration"].value;
+  var necessitydayduration = form.elements["necessitydayduration"].checked;
+
+  var workingmode_5_2 = false;
+  var workingmode_2_2 = false;
+  if (form.elements["workingmode"].value == '5/2'){
+    workingmode_5_2 = true;
+  } else {
+    workingmode_2_2 = true;
+  }
+
+  if (action == "edit"){
+    return {cookid : cookid, name : name, surname : surname, patronymic : patronymic, russian : russian, italian : italian, japanese : japanese,
+    morningshifts : morningshifts, eveningshifts : eveningshifts, necessityshiftstime : necessityshiftstime, dayduration : dayduration,
+    necessitydayduration : necessitydayduration, workingmode_5_2 : workingmode_5_2, workingmode_2_2 : workingmode_2_2};
+  } else {
+    return {name : name, surname : surname, patronymic : patronymic, russian : russian, italian : italian, japanese : japanese,
+    morningshifts : morningshifts, eveningshifts : eveningshifts, necessityshiftstime : necessityshiftstime, dayduration : dayduration,
+    necessitydayduration : necessitydayduration, workingmode_5_2 : workingmode_5_2, workingmode_2_2 : workingmode_2_2};
+  }
+}
+
 function addNewCook(e){
   e.preventDefault();
 
   if(isValid(this)){
-    var name = this.elements["name"].value;
-    var surname = this.elements["surname"].value;
-    var patronymic = this.elements["patronymic"].value;
 
-    var japanese = this.elements["japanese"].checked;
-    var italian = this.elements["italian"].checked;
-    var russian = this.elements["russian"].checked;
-
-    var morningshifts = false;
-    var eveningshifts = false;
-    if (this.elements["shiftstime"].value == 'evening'){
-      eveningshifts = true;
-    } else {
-      morningshifts = true;
-    }
-
-    var necessityshiftstime = this.elements["necessityshiftstime"].checked;
-
-    var dayduration = this.elements["dayduration"].value;
-    var necessitydayduration = this.elements["necessitydayduration"].checked;
-
-    var workingmode_5_2 = false;
-    var workingmode_2_2 = false;
-    if (this.elements["workingmode"].value == '5/2'){
-      workingmode_5_2 = true;
-    } else {
-      workingmode_2_2 = true;
-    }
-
-    var elems = this.elements;
+    var form = this;
 
     $.ajax({
       type : "post",
       url : "/addnew_handler",
-      data : JSON.stringify({name : name, surname : surname, patronymic : patronymic, russian : russian, italian : italian, japanese : japanese,
-      morningshifts : morningshifts, eveningshifts : eveningshifts, necessityshiftstime : necessityshiftstime, dayduration : dayduration,
-      necessitydayduration : necessitydayduration, workingmode_5_2 : workingmode_5_2, workingmode_2_2 : workingmode_2_2}),
+      data : JSON.stringify(getRequestObject("addnew",form)),
       dataTpe : "json",
       contentType : "application/json",
       success : function(data){
         loadCooksInfo();
-        showActionResult(elems, data, "Accepted", "New cook added", "New cook wasn't added");
+        showActionResult(form.elements, data, "Accepted", "New cook added", "New cook wasn't added");
       },
     });
   };//if(isValid(this))
@@ -103,86 +118,61 @@ function editCook(e){
   e.preventDefault();
 
   if(isValid(this)){
-    var cookid = cid;
-    var name = this.elements["name"].value;
-    var surname = this.elements["surname"].value;
-    var patronymic = this.elements["patronymic"].value;
 
-    var japanese = this.elements["japanese"].checked;
-    var italian = this.elements["italian"].checked;
-    var russian = this.elements["russian"].checked;
-
-    var morningshifts = false;
-    var eveningshifts = false;
-    if (this.elements["shiftstime"].value == 'evening'){
-      eveningshifts = true;
-    } else {
-      morningshifts = true;
-    }
-
-    //var shiftstime = this.elements["shiftstime"].value;
-    var necessityshiftstime = this.elements["necessityshiftstime"].checked;
-
-    var dayduration = this.elements["dayduration"].value;
-    var necessitydayduration = this.elements["necessitydayduration"].checked;
-
-    var workingmode_5_2 = false;
-    var workingmode_2_2 = false;
-    if (this.elements["workingmode"].value == '5/2'){
-      workingmode_5_2 = true;
-    } else {
-      workingmode_2_2 = true;
-    }
-
-    //var workingmode = this.elements["workingmode"].value;
-
-    var elems = this.elements;
+    var form = this;
 
     $.ajax({
       type : "post",
       url : "/edit_handler",
-      data : JSON.stringify({cookid : cookid, name : name, surname : surname, patronymic : patronymic, russian : russian, italian : italian, japanese : japanese,
-      morningshifts : morningshifts, eveningshifts : eveningshifts, necessityshiftstime : necessityshiftstime, dayduration : dayduration,
-      necessitydayduration : necessitydayduration, workingmode_5_2 : workingmode_5_2, workingmode_2_2 : workingmode_2_2}),
+      data : JSON.stringify(getRequestObject("edit",form)),
       dataTpe : "json",
       contentType : "application/json",
       success : function(data){
         loadCooksInfo();
-        showActionResult(elems, data, "Accepted", "Changes saved", "Changes wasn't saved");
+        showActionResult(form.elements, data, "Accepted", "Changes saved", "Changes wasn't saved");
       },
     });//ajax
   };//if(isValid(this))
 }
 
+function showMessage(container, classNameContainer, elementName, classNameElement, message){
+  container.className = classNameContainer;
+  var msgElem = document.createElement(elementName);
+  msgElem.className = classNameElement;
+  msgElem.innerHTML = message;
+  container.appendChild(msgElem);
+}
+
+function resetMessage(container, classNameElement) {
+  container.className = '';
+  if (container.lastChild.className == classNameElement) {
+    container.removeChild(container.lastChild);
+  }
+}
 
 function showError(container, errorMessage) {
-      container.className = 'error';
-      var msgElem = document.createElement('span');
-      msgElem.className = "error-message";
-      msgElem.innerHTML = errorMessage;
-      container.appendChild(msgElem);
+  showMessage(container,"error","span","error-message",errorMessage);
 }
 
 function showNotification(container, notificationMessage) {
-      container.className = 'notification';
-      var msgElem = document.createElement('span');
-      msgElem.className = "notification-message";
-      msgElem.innerHTML = notificationMessage;
-      container.appendChild(msgElem);
+  showMessage(container,"notification","span","notification-message",notificationMessage);
 }
 
 function resetError(container) {
-  container.className = '';
-  if (container.lastChild.className == "error-message") {
-    container.removeChild(container.lastChild);
-  }
+  resetMessage(container, "error-message");
 }
 
 function resetNotification(container) {
-  container.className = '';
-  if (container.lastChild.className == "notification-message") {
-    container.removeChild(container.lastChild);
+  resetMessage(container, "notification-message");
+}
+
+function validate(element, condition, errorMessage){
+  resetError(element);
+  if (!condition) {
+    showError(element, errorMessage);
+    return false;
   }
+  return true;
 }
 
 function isValid(form) {
@@ -190,35 +180,21 @@ function isValid(form) {
   var RegLetters = new RegExp("^[A-zА-яЁё]+$");
   var valid = true;
 
-  resetError(elems.name.parentNode);
-  if (!(elems.name.value && RegLetters.test(elems.name.value))) {
-    showError(elems.name.parentNode, 'Please, type valid name');
-    valid = false;
-  }
+  valid = validate(elems.name.parentNode, (elems.name.value && RegLetters.test(elems.name.value)), "Please, type valid name");
+  if(valid == false) return false;
 
-  resetError(elems.surname.parentNode);
-  if (!(elems.surname.value && RegLetters.test(elems.surname.value))) {
-    showError(elems.surname.parentNode, 'Please, type valid surname');
-    valid = false;
-  }
+  valid = validate(elems.surname.parentNode, (elems.surname.value && RegLetters.test(elems.surname.value)), "Please, type valid surname");
+  if(valid == false) return false;
 
-  resetError(elems.russian.parentNode);
-  if(!(elems.russian.checked || elems.italian.checked || elems.japanese.checked)){
-    showError(elems.russian.parentNode, 'Cook can\'t have no qualifications');
-    valid = false;
-  }
+  valid = validate(elems.russian.parentNode, (elems.russian.checked || elems.italian.checked || elems.japanese.checked), "Cook can\'t have no qualifications");
+  if(valid == false) return false;
 
-  resetError(document.getElementById("morningshifts").parentNode);
-  if (!elems.shiftstime.value) {
-    showError(document.getElementById("morningshifts").parentNode, 'Cook can\'t have no desired time of shifts');
-    valid = false;
-  }
+  valid = validate(elems.shiftstime[0].parentNode, (elems.shiftstime.value!=""), "Cook can\'t have no desired time of shifts");
+  if(valid == false) return false;
 
-  resetError(elems.dayduration.parentNode);
-  if (parseInt(elems.dayduration.value) > parseInt(elems.dayduration.max) || (parseInt(elems.dayduration.value) < parseInt(elems.dayduration.min))) {
-    showError(elems.dayduration.parentNode, 'Please, select valid duration of the working day');
-    valid = false;
-  }
+  valid = validate(elems.dayduration.parentNode,
+    (!((parseInt(elems.dayduration.value) > parseInt(elems.dayduration.max)) || (parseInt(elems.dayduration.value) < parseInt(elems.dayduration.min)))),
+    "Please, select valid duration of the working day");
 
   return valid;
 }
@@ -320,22 +296,24 @@ function switchCooksVisibility(){
   }
 }
 
+function addNewElement(name,className,innerHTML,parent_id,id){
+  var elem = document.createElement(name);
+  if(className != "") elem.className = className;
+  if(innerHTML != "") elem.innerHTML = innerHTML;
+  if(id != "") elem.id = id;
+  console.log(document.getElementById(parent_id));
+  console.log(parent_id);
+  document.getElementById(parent_id).appendChild(elem);
+}
+
 function showAntiSchedule(data){
   removeChilds(document.getElementById("schedule"), 0);
 
-  var h3Elem = document.createElement('h3');
-  h3Elem.className = "bad_schedule_header";
-  h3Elem.innerHTML = "Can't make schedule with this params.";
-  document.getElementById("schedule").appendChild(h3Elem);
+  addNewElement("h3","bad_schedule_header","Can't make schedule with this params.","schedule","");
 
-  h3Elem = document.createElement('h3');
-  h3Elem.className = "bad_schedule_header";
-  h3Elem.innerHTML = "Required : ";
-  document.getElementById("schedule").appendChild(h3Elem);
+  addNewElement("h3","bad_schedule_header","Required : ","schedule","");
 
-  var ulElem = document.createElement('ul');
-  ulElem.id = "bad_schedule_list";
-  document.getElementById("schedule").appendChild(ulElem);
+  addNewElement("ul","","","schedule","bad_schedule_list");
 
   var kitchen;
   for (var i = 0; i < data.length; i++){
@@ -356,58 +334,35 @@ function showAntiSchedule(data){
 function showSchedule(data){
   removeChilds(document.getElementById("schedule"), 0);
 
-  var h3Elem = document.createElement('h3');
-  h3Elem.className = "good_schedule_header";
-  h3Elem.innerHTML = "Schedule";
-  document.getElementById("schedule").appendChild(h3Elem);
+  addNewElement("h3","good_schedule_header","Schedule","schedule","")
 
-  var ulElem = document.createElement('ul');
-  ulElem.id = "good_schedule_list";
-
-  document.getElementById("schedule").appendChild(ulElem);
+  addNewElement("ul","","","schedule","good_schedule_list")
 
   var kitchen;
   for (var i = 0; i < data.length; i++){
-    var liElem = document.createElement("li");
-    liElem.id = "day_"+i;
-    liElem.innerHTML = (i+1)+" day :";
-    document.getElementById("good_schedule_list").appendChild(liElem);
 
-    ulElem = document.createElement('ul');
-    ulElem.id = "good_schedule_list_day_"+i;
-    ulElem.className = "day_list";
-    document.getElementById("day_"+i).appendChild(ulElem);
+    addNewElement("li","",(i+1)+" day :","good_schedule_list","day_"+i);
+
+    addNewElement("ul","day_list","","day_"+i,"good_schedule_list_day_"+i);
 
     for (var j = 0; j < data[i].length; j++){
-      liElem = document.createElement("li");
-      liElem.id = "day_"+i+"_restaurant_"+j;
-      liElem.innerHTML = (j+1)+" restaurant :";
-      document.getElementById("good_schedule_list_day_"+i).appendChild(liElem);
 
-      ulElem = document.createElement('ul');
-      ulElem.id = "good_schedule_list_day_"+i+"_restaurant_"+j;
-      ulElem.className = "restaurant_list";
-      document.getElementById("day_"+i+"_restaurant_"+j).appendChild(ulElem);
+      addNewElement("li","",(j+1)+" restaurant :","good_schedule_list_day_"+i,"day_"+i+"_restaurant_"+j);
+
+      addNewElement("ul","restaurant_list","","day_"+i+"_restaurant_"+j,"good_schedule_list_day_"+i+"_restaurant_"+j);
 
       for (var k = 0; k < data[i][j].length; k++){
         if (k == 0) kitchen = "russian";
         if (k == 1) kitchen = "italian";
         if (k == 2) kitchen = "japanese";
 
-        liElem = document.createElement("li");
-        liElem.id = "day_"+i+"_restaurant_"+j+"_kitchen_"+k;
-        liElem.innerHTML = kitchen+" kitchen : ";
-        document.getElementById("good_schedule_list_day_"+i+"_restaurant_"+j).appendChild(liElem);
+        addNewElement("li","",kitchen+" kitchen : ","good_schedule_list_day_"+i+"_restaurant_"+j,"day_"+i+"_restaurant_"+j+"_kitchen_"+k);
 
-        ulElem = document.createElement('ul');
-        ulElem.id = "good_schedule_list_day_"+i+"_restaurant_"+j+"_kitchen_"+k;
-        ulElem.className = "kitchen_list";
-        document.getElementById("day_"+i+"_restaurant_"+j+"_kitchen_"+k).appendChild(ulElem);
+        addNewElement("ul","kitchen_list","","day_"+i+"_restaurant_"+j+"_kitchen_"+k,"good_schedule_list_day_"+i+"_restaurant_"+j+"_kitchen_"+k);
 
         for (var l = 0; l < data[i][j][k].length; l++){
-          liElem = document.createElement("li");
-          liElem.innerHTML = data[i][j][k][l].snp+"( id = "+data[i][j][k][l].id+" ) : "+data[i][j][k][l].worktime;
-          document.getElementById("good_schedule_list_day_"+i+"_restaurant_"+j+"_kitchen_"+k).appendChild(liElem);
+          addNewElement("li","",data[i][j][k][l].snp+"( id = "+data[i][j][k][l].id+" ) : "+data[i][j][k][l].worktime,
+            "good_schedule_list_day_"+i+"_restaurant_"+j+"_kitchen_"+k,"");
         }
       }
     }
